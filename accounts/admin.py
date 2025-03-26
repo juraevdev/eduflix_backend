@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from accounts.models import CustomUser
+from accounts.models import CustomUser, ConfirmationCodes
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -20,3 +20,5 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ("is_staff", "is_superuser", "is_active", "role")
     search_fields = ("name", "email", "role")
     ordering = ("email",)
+
+admin.site.register(ConfirmationCodes)

@@ -34,10 +34,23 @@ class CustomUserLoginSerializer(serializers.Serializer):
 
 
 class AdminProfileSerializer(serializers.Serializer):
-    image = serializers.ImageField(upload_to='admin/profile_images/')
+    image = serializers.ImageField()
     name = serializers.CharField()
     subject = serializers.CharField()
     subject_cost = serializers.IntegerField()
     cost_share = serializers.IntegerField()
     courses = serializers.CharField()
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.CharField()
+
+class PasswordResetVerifySerializer(serializers.Serializer):
+    code = serializers.CharField()
+
+class PasswordResetSerializer(serializers.Serializer):
+    email = serializers.CharField()
+    new_password = serializers.CharField()
+    confirm_password = serializers.CharField()
+
     

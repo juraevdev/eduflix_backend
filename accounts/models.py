@@ -1,3 +1,5 @@
+import random, datetime
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from accounts.managers import CustomUserManager
@@ -22,9 +24,31 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return f"{self.email} ({self.get_role_display()})"
     
+
+    def generate_verify_code(self):
+        code = ''.join(str(random.randint(0, 9)) for _ in range(5))
+        ConfirmationCodes.objects.create(
+            user = self,
+            code=code,
+            expires = timezone.now() + datetime.timedelta(minutes=2)
+        )
+        return code
+    
+    
     class Meta:
         verbose_name = "User"
         verbose_name_plural = "Users"
+
+
+
+class ConfirmationCodes(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='codes')
+    code = models.CharField(max_length=5)
+    expires = models.DateTimeField(null=True, blank=True)
+    is_used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user} - {self.code}"
 
 
 class AdminProfile(models.Model):

@@ -1,8 +1,11 @@
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from accounts.serializers import CustomUserRegisterSerializer, CustomUserLoginSerializer
-from accounts.models import CustomUser
+from accounts.models import CustomUser, ConfirmationCodes
+from accounts.serializers import (
+    CustomUserRegisterSerializer, CustomUserLoginSerializer,
+    PasswordResetRequestSerializer, PasswordResetVerifySerializer, PasswordResetSerializer
+)
 
 
 
@@ -142,4 +145,66 @@ class AccountantLoginApiView(generics.GenericAPIView):
                 "refresh": str(refresh),
                 "access": str(refresh.access_token)
             })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class PasswordResetRequestApiView(generics.GenericAPIView):
+    serializer_class = PasswordResetRequestSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.validated_data['role'] = 'admin'
+            email = serializer.data['email']
+            user = CustomUser.objects.filter(email=email).first()
+            if user is None:
+                return Response({'message': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
+            code = user.generate_verify_code()
+            return Response({'message': 'Verification code is sent to your email, Please check inbox!', 'code': code}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class PasswordResetVerifyApiView(generics.GenericAPIView):
+    serializer_class = PasswordResetVerifySerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.validated_data['role'] = 'admin'
+            code = serializer.data['code']
+            user = request.user
+            otp_code = ConfirmationCodes.objects.filter(code=code).first()
+
+            if user is None:
+                return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            if otp_code is None:
+                return Response({'message': 'Verification code is wrong or expired!'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            otp_code.is_used = True
+            otp_code.save()
+            return Response({'message': 'Verification complete! Now you can change your password'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class PasswordResetApiView(generics.GenericAPIView):
+    serializer_class = PasswordResetSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.validated_data['role'] = 'admin'
+            email = serializer.data['email']
+            new_password = serializer.data['new_password']
+            confirm_password = serializer.data['confirm_password']
+            user = CustomUser.objects.filter(email=email).first()
+
+            if user is None:
+                return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            if new_password != confirm_password:
+                return Response({"message": "Password didn't match"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            user.set_password(confirm_password)
+            user.save()
+            return Response({'message': 'Password changed successfully!'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

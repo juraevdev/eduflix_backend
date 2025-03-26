@@ -2,7 +2,8 @@ from django.urls import path
 from accounts.views import (
     CustomUserRegisterApiView, CustomUserLoginApiView, 
     ManagerRegisterApiView, ManagerLoginApiView, 
-    AccountantRegisterApiView, AccountantLoginApiView
+    AccountantRegisterApiView, AccountantLoginApiView,
+    PasswordResetRequestApiView, PasswordResetVerifyApiView, PasswordResetApiView
 )
 
 urlpatterns = [
@@ -12,4 +13,7 @@ urlpatterns = [
     path('manager/login/', ManagerLoginApiView.as_view()),
     path('accountant/register/', AccountantRegisterApiView.as_view()),
     path('accountant/login/', AccountantLoginApiView.as_view()),
+    path('admin/password/reset-request/', PasswordResetRequestApiView.as_view()),
+    path('admin/password/reset-verify/', PasswordResetVerifyApiView.as_view()),
+    path('admin/password/reset/', PasswordResetApiView.as_view()),
 ]
