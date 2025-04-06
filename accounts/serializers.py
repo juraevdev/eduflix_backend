@@ -5,7 +5,7 @@ from accounts.models import CustomUser
 class CustomUserRegisterSerializer(serializers.Serializer):
     name = serializers.CharField()
     email = serializers.EmailField()
-    role = serializers.ChoiceField(choices=[("admin", "Administrator"), ("manager", "Manager"), ("accountant", "Accountant")])
+    role = serializers.ChoiceField(choices=[("admin", "Administrator"), ("manager", "Manager"), ("accountant", "Accountant"), ("teacher", "Teacher"), ("pupil", "Pupil")])
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
 

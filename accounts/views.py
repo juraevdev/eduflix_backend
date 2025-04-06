@@ -8,7 +8,6 @@ from accounts.serializers import (
 )
 
 
-
 class CustomUserRegisterApiView(generics.GenericAPIView):
     serializer_class = CustomUserRegisterSerializer
 
@@ -72,12 +71,13 @@ class ManagerRegisterApiView(generics.GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class ManagerLoginApiView(generics.GenericAPIView):
     serializer_class = CustomUserLoginSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        if serializer.save(raise_exception=True):
+        if serializer.is_valid(raise_exception=True):
             serializer.validated_data['role'] = 'manager'
             name = serializer.validated_data['name']
             password = serializer.validated_data['password']
@@ -118,6 +118,7 @@ class AccountantRegisterApiView(generics.GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class AccountantLoginApiView(generics.GenericAPIView):
     serializer_class = CustomUserLoginSerializer
 
@@ -147,6 +148,95 @@ class AccountantLoginApiView(generics.GenericAPIView):
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
+class TeacherRegisterApiView(generics.GenericAPIView):
+    serializer_class = CustomUserRegisterSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.validated_data['role'] = 'teacher'
+            serializer.save()
+            return Response({'message': 'Teacher created successfully!'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class TeacherLoginApiView(generics.GenericAPIView):
+    serializer_class = CustomUserLoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.validated_data['role'] = 'teacher'
+            name = serializer.validated_data['name']
+            password = serializer.validated_data['password']
+
+            teacher = CustomUser.objects.filter(
+                name=name, role='teacher').first()
+            
+            if teacher is None:
+                return Response({'message': 'Teacher not found!'}, status=status.HTTP_404_NOT_FOUND)
+
+            if not teacher.check_password(password):
+                return Response({'message': 'Wrong password, please try again!'}, status=status.HTTP_401_UNAUTHORIZED)
+
+            if teacher.role != 'teacher':
+                return Response({"message": "You're not a teacher!"}, status=status.HTTP_403_FORBIDDEN)
+
+            refresh = RefreshToken.for_user(teacher)
+
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token)
+            })
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PupilRegisterApiView(generics.GenericAPIView):
+    serializer_class = CustomUserRegisterSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.validated_data['role'] = 'pupil'
+            serializer.save()
+            return Response({'message': 'Pupil created successfully!'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PupilLoginApiView(generics.GenericAPIView):
+    serializer_class = CustomUserLoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.validated_data['role'] = 'pupil'
+            name = serializer.validated_data['name']
+            password = serializer.validated_data['password']
+
+            pupil = CustomUser.objects.filter(
+                name=name, role='pupil').first()
+
+            if pupil is None:
+                return Response({'message': 'Pupil not found!'}, status=status.HTTP_404_NOT_FOUND)
+            
+            if not pupil.check_password(password):
+                return Response({'message': 'Wrong password, please try again'}, status=status.HTTP_401_UNAUTHORIZED)
+
+            if pupil.role != 'pupil':
+                return Response({"message": "You're not pupil!"}, status=status.HTTP_403_FORBIDDEN)
+
+            refresh = RefreshToken.for_user(pupil)
+
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token)
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
 class PasswordResetRequestApiView(generics.GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
 
