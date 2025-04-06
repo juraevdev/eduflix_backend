@@ -1,15 +1,19 @@
 from pathlib import Path
 import os
+from decouple import config
+import environ, os
+
+env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+SECRET_KEY = config('SECRET_KEY')
 
 
-SECRET_KEY = 'django-insecure-efj+(a)qy!k=)bhummycic*g^u4f34*zrm*d&kz7y+)gcx!-k!'
-
-
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -69,8 +73,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': '127.0.0.1',    
+        'PORT': '5432',
     }
 }
 

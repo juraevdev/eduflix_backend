@@ -1,4 +1,5 @@
 from django.db import models
+from courses.models import Course
 
 
 REGIONS_AND_DISTRICTS = {
@@ -52,6 +53,7 @@ class School(models.Model):
     school_no = models.IntegerField(null=True, blank=True)
     region = models.CharField(max_length=100, choices=REGION, default="Jizzax")
     district = models.CharField(max_length=100, choices=DISTRICT, null=True, blank=True)
+    course = models.ManyToManyField(Course, blank=True, related_name='school_courses')
 
 
     def __str__(self):
@@ -66,6 +68,7 @@ class EduCenter(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     region = models.CharField(max_length=100, choices=REGION, default="Jizzax", null=True, blank=True)
     district = models.CharField(max_length=100, choices=DISTRICT, default="Sharof Rashidov", null=True, blank=True)
+    course = models.ManyToManyField(Course, blank=True, related_name='educenter_courses')
 
     def __str__(self):
         return f'{self.name} - {self.region} - {self.district}'

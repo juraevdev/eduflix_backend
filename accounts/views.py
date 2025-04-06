@@ -77,7 +77,7 @@ class ManagerLoginApiView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        if serializer.save(raise_exception=True):
+        if serializer.is_valid(raise_exception=True):
             serializer.validated_data['role'] = 'manager'
             name = serializer.validated_data['name']
             password = serializer.validated_data['password']
