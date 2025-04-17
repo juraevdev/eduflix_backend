@@ -1,10 +1,11 @@
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from accounts.models import CustomUser, ConfirmationCodes
+from accounts.models import CustomUser, ConfirmationCodes, Student
 from accounts.serializers import (
     CustomUserRegisterSerializer, CustomUserLoginSerializer,
-    PasswordResetRequestSerializer, PasswordResetVerifySerializer, PasswordResetSerializer
+    PasswordResetRequestSerializer, PasswordResetVerifySerializer, PasswordResetSerializer,
+    StudentRegisterSerializer
 )
 
 
@@ -194,7 +195,7 @@ class TeacherLoginApiView(generics.GenericAPIView):
 
 
 class PupilRegisterApiView(generics.GenericAPIView):
-    serializer_class = CustomUserRegisterSerializer
+    serializer_class = StudentRegisterSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -215,7 +216,7 @@ class PupilLoginApiView(generics.GenericAPIView):
             name = serializer.validated_data['name']
             password = serializer.validated_data['password']
 
-            pupil = CustomUser.objects.filter(
+            pupil = Student.objects.filter(
                 name=name, role='pupil').first()
 
             if pupil is None:

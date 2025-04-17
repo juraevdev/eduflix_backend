@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from accounts.models import CustomUser, ConfirmationCodes
+from accounts.models import CustomUser, ConfirmationCodes, Student, Attendance
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -22,3 +22,5 @@ class CustomUserAdmin(UserAdmin):
     ordering = ("email",)
 
 admin.site.register(ConfirmationCodes)
+admin.site.register(Student)
+admin.site.register(Attendance)

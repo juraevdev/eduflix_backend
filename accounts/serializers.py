@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from accounts.models import CustomUser
+from accounts.models import CustomUser, Student
 
 
 class CustomUserRegisterSerializer(serializers.Serializer):
@@ -54,3 +54,30 @@ class PasswordResetSerializer(serializers.Serializer):
     confirm_password = serializers.CharField()
 
     
+class StudentRegisterSerializer(serializers.Serializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    age = serializers.IntegerField()
+    email = serializers.EmailField()
+    role = serializers.ChoiceField(choices=[('pupil', 'Pupil')])
+    password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+        if password != confirm_password:
+            raise serializers.ValidationError("Passowrd didn't match")
+        return data
+    
+
+    def create(self, validated_data):
+        user = Student.objects.create(
+            first_name = validated_data['first_name'],
+            last_name = validated_data['last_name'],
+            email = validated_data['email'],
+            age = validated_data['age'],
+            role = validated_data['role'],
+            password = validated_data['password']
+        )
+        return user

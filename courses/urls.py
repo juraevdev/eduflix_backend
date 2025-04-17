@@ -5,7 +5,8 @@ from courses.views import (
     GroupCreateApiView, GroupListApiView,
     GroupDeleteApiView, GroupDetailApiView,
     AssignTeacherToGroupApiView, AssignPupilToGroupApiView,
-    DeleteTeacherFromGroupApiView, DeletePupilFromGroupApiView
+    DeleteTeacherFromGroupApiView, DeletePupilFromGroupApiView,
+    GiveCoinApiView, AttendanceApiView
 )
 
 urlpatterns = [
@@ -21,4 +22,6 @@ urlpatterns = [
     path('assign/pupil/', AssignPupilToGroupApiView.as_view()),
     path('remove/teacher-group/', DeleteTeacherFromGroupApiView.as_view()),
     path('remove/pupil-group/', DeletePupilFromGroupApiView.as_view()),
+    path('coin/', GiveCoinApiView.as_view()),
+    path('attendance/', AttendanceApiView.as_view()),
 ]

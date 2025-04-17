@@ -1,9 +1,10 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from courses.models import Course, Group
-from courses.serializers import CourseSerializer, CourseDetailSerializer, GroupSerializer, AssignTeacherToGroupSerializer, AssignPupilToGroupSerializer
-from accounts.permissions import IsAdmin, IsManager
-from accounts.models import CustomUser
+from courses.serializers import CourseSerializer, CourseDetailSerializer, GroupSerializer, AssignTeacherToGroupSerializer, AssignPupilToGroupSerializer, CoinHistorySerializer, AttendanceSerializer
+from accounts.permissions import IsAdmin
+from accounts.models import CustomUser, CoinHistory, Attendance
+from accounts.permissions import IsTeacher
 
 
 class CourseCreateApiView(generics.GenericAPIView):
@@ -180,3 +181,63 @@ class DeletePupilFromGroupApiView(generics.GenericAPIView):
             group.pupils.remove(user)
 
         return Response({'message': f"{user.name} removed from group!"}, status=status.HTTP_200_OK)
+    
+
+
+class GiveCoinApiView(generics.GenericAPIView):
+    serializer_class = CoinHistorySerializer
+    # permission_classes = [IsTeacher]
+    queryset = CoinHistory.objects.all()
+
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(teacher=request.user)
+            return Response({
+                "success": True,
+                "message": "Muvaffaqiyatli bajarildi",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        return Response({
+            "success": False,
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class AttendanceApiView(generics.GenericAPIView):
+    queryset = Attendance.objects.all()
+    serializer_class = AttendanceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            student = serializer.validated_data['student']
+            is_present = serializer.validated_data['is_present']
+
+            attendance = Attendance.objects.create(
+                student = student,
+                teacher = request.user,
+                is_present = is_present
+            )
+
+            if is_present:
+                CoinHistory.objects.create(
+                    student = student,
+                    teacher = request.user,
+                    action = "attend",
+                    coin = CoinHistory.ACTION_COIN_MAP['attend']
+                )
+            else:
+                CoinHistory.objects.create(
+                    student = student,
+                    teacher = request.user,
+                    action = "miss_class",
+                    coin = CoinHistory.ACTION_COIN_MAP['miss_class']
+                )
+            
+            return Response(self.get_serializer(attendance).data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
