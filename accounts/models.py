@@ -123,7 +123,7 @@ class CoinHistory(models.Model):
 class Attendance(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     teacher = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, limit_choices_to={'role': 'teacher'})
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=datetime.date.today)
     is_present = models.BooleanField(default=True)
 
     class Meta:
