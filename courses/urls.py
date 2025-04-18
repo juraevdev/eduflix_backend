@@ -1,4 +1,5 @@
 from django.urls import path
+
 from courses.views import (
     CourseCreateApiView, CourseListApiView,
     CourseDeleteAPiView, CourseDetailApiView,
